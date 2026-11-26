@@ -16,7 +16,7 @@ public class PlayerData {
     public transient long[] cd = new long[2];
     public transient double drawAcc;
 
-    public static final MapCodec<PlayerData> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
+    public static final Codec<PlayerData> CODEC = RecordCodecBuilder.create(i -> i.group(
             Codec.STRING.optionalFieldOf("race", "").forGetter(d -> d.race),
             Codec.STRING.optionalFieldOf("cls", "").forGetter(d -> d.cls),
             Codec.STRING.listOf().optionalFieldOf("unlocked", List.of()).forGetter(d -> new ArrayList<>(d.unlocked)),
