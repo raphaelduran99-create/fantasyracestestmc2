@@ -103,17 +103,29 @@ public final class Fx {
         }
     }
 
-    public String describe() {
-        StringJoiner j = new StringJoiner(", ");
+    public record Line(String text, int color) {}
+
+    public List<Line> lines() {
+        List<Line> out = new ArrayList<>();
         for (var e : v.entrySet()) {
             Def d = ATTR.get(e.getKey());
             String label = d != null ? d.label() : STAT.getOrDefault(e.getKey(), e.getKey());
             boolean pct = d == null || d.pct();
             double x = e.getValue();
-            j.add(label + " " + (pct ? String.format(Locale.ROOT, "%+d%%", Math.round(x * 100)) : fmt(x)));
+            String t = label + " " + (pct ? String.format(Locale.ROOT, "%+d%%", Math.round(x * 100)) : fmt(x));
+            boolean neutral = e.getKey().equals("scale") || e.getKey().equals("gravity");
+            out.add(new Line(t, neutral ? 0xFF55FFFF : x > 0 ? 0xFF55FF55 : 0xFFFF5555));
         }
+        return out;
+    }
+
+    public String describe() {
+        StringJoiner j = new StringJoiner(", ");
+        for (Line l : lines()) j.add(l.text());
         return j.toString();
     }
+
+    public void addAll(Fx o) { o.v.forEach((k, x) -> v.merge(k, x, Double::sum)); }
 
     private static String fmt(double x) {
         String s = x == Math.floor(x) ? String.valueOf((long) x) : String.format(Locale.ROOT, "%.1f", x);
