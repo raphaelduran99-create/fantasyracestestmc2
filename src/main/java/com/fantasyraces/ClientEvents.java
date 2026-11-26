@@ -28,16 +28,23 @@ public final class ClientEvents {
         while (Keys.SKILL2.consumeClick()) PacketDistributor.sendToServer(new Net.UseSkill(1));
 
         if (ClientState.changed) {
-            ClientState.changed = false;
             Screen cur = mc.screen;
+            boolean done = true;
             if (ClientState.race.isEmpty()) {
-                if (!first && cur == null) mc.setScreen(new RaceScreen());
+                if (!first) {
+                    if (cur == null) { mc.setScreen(new RaceScreen()); first = true; }
+                    else done = false; // un autre écran est ouvert : on réessaie au prochain tick
+                }
             } else if (ClientState.cls.isEmpty()) {
-                if ((!first && cur == null) || cur instanceof RaceScreen) mc.setScreen(new ClassScreen());
+                if (cur instanceof RaceScreen) { mc.setScreen(new ClassScreen()); first = true; }
+                else if (!first) {
+                    if (cur == null) { mc.setScreen(new ClassScreen()); first = true; }
+                    else done = false;
+                }
             } else if (cur instanceof ClassScreen) {
                 mc.setScreen(new TreeScreen());
             }
-            first = true;
+            if (done) ClientState.changed = false;
         }
         if (mc.screen instanceof TreeScreen ts && ts.version != ClientState.version) ts.refresh();
     }
